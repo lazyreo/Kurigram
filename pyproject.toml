@@ -1,0 +1,14 @@
+[project]
+name = "kurigram"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "dotenv>=0.9.9",
+    "pyromod>=3.1.6",
+    "qrcode>=8.2",
+    "reloadium>=1.5.1",
+    "requests>=2.34.2",
+    "tgcrypto>=1.2.5",
+]
