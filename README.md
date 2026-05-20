@@ -17,10 +17,13 @@ A Telegram bot that shortens lengthy URLs using the Droplink API. This bot requi
 ├── config.py            # Environment configuration loader
 ├── api_client.py        # API client for making requests to Droplink
 ├── pyproject.toml       # Project metadata and dependencies
+├── requirements.txt     # Optional dependency lock / install list
 └── README.md            # This file
 ```
 
 ## Dependencies
+
+This project uses the dependencies declared in `pyproject.toml` and also includes a `requirements.txt` lock-style file for installing the same packages.
 
 - `pyrogram`: Telegram bot framework
 - `pyromod`: Extensions for Pyrogram
@@ -36,17 +39,31 @@ A Telegram bot that shortens lengthy URLs using the Droplink API. This bot requi
 
 - Python 3.11 or higher
 - Telegram Bot Token (from [@BotFather](https://t.me/botfather))
-- Telegram API credentials (API_ID and API_HASH from [my.telegram.org](https://my.telegram.org))
+- Telegram API credentials (`API_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org))
 - Droplink API Key (from [droplink.co](https://droplink.co))
 
 ### 2. Installation
 
-Clone the repository and install dependencies:
+Install dependencies using one of the following options.
+
+Option A: Install from `requirements.txt`:
 
 ```bash
-pip install -r requirements.txt
-# or using uv
-uv pip install -r requirements.txt
+python -m pip install -U pip
+python -m pip install -r requirements.txt
+```
+
+Option B: Install the required packages directly from `pyproject.toml`:
+
+```bash
+python -m pip install -U pip
+python -m pip install pyrogram pyromod requests python-dotenv tgcrypto qrcode reloadium
+```
+
+Option C: If you use Poetry:
+
+```bash
+poetry install
 ```
 
 ### 3. Environment Configuration
@@ -60,6 +77,8 @@ APP_API_HASH=your_api_hash_here
 DROPLINK_API_KEY=your_droplink_api_key_here
 MY_CHANNEL_ID=your_channel_id_here
 ```
+
+`MY_CHANNEL_ID` should be the numeric ID of the channel that users must join.
 
 ## How It Works
 
