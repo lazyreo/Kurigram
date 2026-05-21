@@ -13,7 +13,7 @@ A Telegram bot built with Pyrogram and Droplink that shortens HTTPS URLs while e
 ## Project Structure
 
 ```
-├── tiny_url.py          # Main bot logic and message handlers
+├── main.py              # Main bot logic and message handlers
 ├── authorization.py     # Pyrogram client initialization for the bot
 ├── config.py            # Loads environment variables from .env
 ├── api_client.py        # Sends requests to Droplink and parses JSON responses
@@ -100,7 +100,7 @@ Requests the Droplink API with:
 
 It prints the HTTP status and response body, and handles common request errors.
 
-### `tiny_url.py`
+### `main.py`
 
 1. **Channel membership enforcement** (`group=1`)
    - Calls `get_chat_member` on `MY_CHANNEL_ID`
@@ -115,14 +115,14 @@ It prints the HTTP status and response body, and handles common request errors.
    - Extracts `shortenedUrl` from the JSON response
    - Replies with the shortened link and an inline `Open` button
 
-> Note: The join button URL is currently hard-coded to `https://t.me/practicekurigram` in `tiny_url.py`.
+> Note: The join button URL is currently hard-coded to `https://t.me/practicekurigram` in `main.py`.
 
 ## Usage
 
 Run the bot:
 
 ```bash
-python tiny_url.py
+python main.py
 ```
 
 Then message the bot on Telegram:
