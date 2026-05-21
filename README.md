@@ -1,66 +1,58 @@
 # Kurigram - Telegram URL Shortener Bot
 
-A Telegram bot that shortens lengthy URLs using the Droplink API. This bot requires users to be members of a specific channel before they can use its services.
+A Telegram bot built with Pyrogram and Droplink that shortens HTTPS URLs while enforcing channel membership.
 
 ## Features
 
-- ✅ **Channel Membership Check**: Verifies that users are members of a designated Telegram channel before allowing access
-- ✅ **URL Shortening**: Converts lengthy URLs into shortened versions using the Droplink API
-- ✅ **Interactive UI**: Provides an inline button to directly open shortened URLs
-- ✅ **User-Friendly Messages**: Guides users with clear instructions and friendly responses
+- ✅ Channel membership enforcement before URL shortening
+- ✅ Shortens messages starting with `https`
+- ✅ Replies with a prompt for non-URL messages
+- ✅ Sends an inline **Open** button with the shortened link
+- ✅ Handles Droplink API request errors and prints details to console
 
 ## Project Structure
 
 ```
-├── tiny_url.py          # Main bot handler with message processing logic
-├── authorization.py     # Telegram bot client initialization
-├── config.py            # Environment configuration loader
-├── api_client.py        # API client for making requests to Droplink
+├── tiny_url.py          # Main bot logic and message handlers
+├── authorization.py     # Pyrogram client initialization for the bot
+├── config.py            # Loads environment variables from .env
+├── api_client.py        # Sends requests to Droplink and parses JSON responses
 ├── pyproject.toml       # Project metadata and dependencies
-├── requirements.txt     # Optional dependency lock / install list
-└── README.md            # This file
+├── requirements.txt     # Placeholder file
+└── README.md            # Project documentation
 ```
 
 ## Dependencies
 
-This project uses the dependencies declared in `pyproject.toml` and also includes a `requirements.txt` lock-style file for installing the same packages.
+Dependencies are declared in `pyproject.toml`.
 
-- `pyrogram`: Telegram bot framework
-- `pyromod`: Extensions for Pyrogram
-- `requests`: HTTP library for API requests
-- `python-dotenv`: Environment variable management
-- `tgcrypto`: Encryption support for Telegram
-- `qrcode`: QR code generation
-- `reloadium`: Development reload utility
+- `dotenv`
+- `pyrogram`
+- `pyromod`
+- `requests`
+- `tgcrypto`
+
+> `requirements.txt` is currently a placeholder. Install dependencies with `pip` or `poetry install`.
 
 ## Setup Instructions
 
 ### 1. Prerequisites
 
 - Python 3.11 or higher
-- Telegram Bot Token (from [@BotFather](https://t.me/botfather))
-- Telegram API credentials (`API_ID` and `API_HASH` from [my.telegram.org](https://my.telegram.org))
-- Droplink API Key (from [droplink.co](https://droplink.co))
+- Telegram Bot Token from [@BotFather](https://t.me/botfather)
+- Telegram API credentials (`API_ID` and `API_HASH`) from [my.telegram.org](https://my.telegram.org)
+- Droplink API Key from [droplink.co](https://droplink.co)
 
 ### 2. Installation
 
-Install dependencies using one of the following options.
-
-Option A: Install from `requirements.txt`:
+Install the required packages:
 
 ```bash
 python -m pip install -U pip
-python -m pip install -r requirements.txt
+python -m pip install pyrogram pyromod requests dotenv tgcrypto
 ```
 
-Option B: Install the required packages directly from `pyproject.toml`:
-
-```bash
-python -m pip install -U pip
-python -m pip install pyrogram pyromod requests python-dotenv tgcrypto qrcode reloadium
-```
-
-Option C: If you use Poetry:
+Or use Poetry:
 
 ```bash
 poetry install
@@ -68,65 +60,81 @@ poetry install
 
 ### 3. Environment Configuration
 
-Create a `.env` file in the project root with the following variables:
+Create a `.env` file in the project root with:
 
 ```env
 APP_BOT_TOKEN=your_bot_token_here
 APP_API_ID=your_api_id_here
 APP_API_HASH=your_api_hash_here
 DROPLINK_API_KEY=your_droplink_api_key_here
-MY_CHANNEL_ID=your_channel_id_here
+MY_CHANNEL_ID=your_channel_id_or_username_here
 ```
 
-`MY_CHANNEL_ID` should be the numeric ID of the channel that users must join.
+`MY_CHANNEL_ID` is used for the Telegram channel membership check.
 
 ## How It Works
 
-### Message Filtering
+### `authorization.py`
 
-The bot uses Pyrogram's filter system with priority groups:
+Initializes the Pyrogram client:
 
-1. **Group 1 - Channel Membership Check**:
-   - Checks if the user is a member of `MY_CHANNEL_ID`
-   - If user is not a member, sends a "Join Channel" prompt
-   - If user is a member, continues to next group
+- `my_bot` session name
+- `api_id`, `api_hash`, and `bot_token` from `config.py`
 
-2. **Group 2 - URL Processing**:
-   - **Non-URL Messages**: Sends a friendly greeting and instructions
-   - **URL Messages**: Accepts URLs starting with `https`, shortens them via Droplink API, and returns the shortened URL with an "Open" button
+### `config.py`
 
-### API Integration
+Loads the environment variables from `.env`:
 
-The bot communicates with the Droplink API to shorten URLs:
+- `BOT_TOKEN` from `APP_BOT_TOKEN`
+- `API_ID` from `APP_API_ID`
+- `API_HASH` from `APP_API_HASH`
+- `DROPLINK_API_KEY`
+- `MY_CHANNEL_ID`
 
-- **Endpoint**: `https://droplink.co/api`
-- **Parameters**: API key and target URL
-- **Response**: Returns the shortened URL as JSON
+### `api_client.py`
+
+Requests the Droplink API with:
+
+- `api`: the Droplink API key
+- `url`: the original URL to shorten
+
+It prints the HTTP status and response body, and handles common request errors.
+
+### `tiny_url.py`
+
+1. **Channel membership enforcement** (`group=1`)
+   - Calls `get_chat_member` on `MY_CHANNEL_ID`
+   - If the user is not a channel member, replies with a join button and stops further processing
+   - If the user is a member, allows the message to continue to later handlers
+
+2. **Non-HTTPS text handling** (`group=2`, `~pyrogram.filters.regex(r"^https")`)
+   - Replies with a friendly prompt asking the user to send a lengthy URL
+
+3. **HTTPS URL shortening** (`group=2`, `pyrogram.filters.regex(r"^https")`)
+   - Sends the URL to Droplink
+   - Extracts `shortenedUrl` from the JSON response
+   - Replies with the shortened link and an inline `Open` button
+
+> Note: The join button URL is currently hard-coded to `https://t.me/practicekurigram` in `tiny_url.py`.
 
 ## Usage
 
-1. Start the bot:
-   ```bash
-   python tiny_url.py
-   ```
+Run the bot:
 
-2. On Telegram:
-   - Send `/start` to the bot
-   - If not a channel member, click the "Join" button
-   - Send any lengthy URL (starting with `https`) to get it shortened
-   - Click the "Open" button to visit the shortened URL
+```bash
+python tiny_url.py
+```
 
-## Error Handling
+Then message the bot on Telegram:
 
-The API client handles various HTTP errors gracefully:
+- Non-URL messages will receive a prompt to send a URL
+- Messages starting with `https` will be shortened
+- The bot replies with a shortened URL and an inline button
 
-- HTTP errors
-- Connection errors
-- Request timeouts
-- Redirect errors
-- JSON decode errors
+## Notes
 
-All errors are logged to the console for debugging.
+- `requirements.txt` is not populated; use the `pyproject.toml` dependencies instead.
+- `register_user.py` is not present in this repository and is not part of the current implementation.
 
 ## License
 
